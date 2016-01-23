@@ -3,13 +3,46 @@
 	var app = express();
 
 	app.use(express.static(__dirname + '/public'));
+
 	// set up handlebars view engine
-	var handlebars = require('express-handlebars').create({defaultLayout:'main'});
+	var handlebars = require('express-handlebars').create({
+	    defaultLayout:'main',
+	    helpers: {
+	        section: function(name, options){
+	            if(!this._sections) this._sections = {};
+	            this._sections[name] = options.fn(this);
+	            return null;
+	        }
+	    }
+	});
 	app.engine('handlebars',handlebars.engine);
 	app.set('view engine', 'handlebars');
 
+	app.use(require('body-parser').urlencoded({ extended: true }));
+
 	// set port to 3000
 	app.set('port', process.env.PORT || 3000);
+
+	// redirected page after user signs up successfully
+	app.get('/thank-you', function(req, res){
+		res.render('thank-you');
+	});
+
+	// page to sign up for newsletter
+	app.get('/newsletter', function(req, res){
+	    res.render('newsletter', { csrf: 'CSRF token goes here' });
+	});
+
+	// posting form data to URL
+	app.post('/process', function(req, res){
+	    if(req.xhr || req.accepts('json,html')==='json'){
+	        // if there were an error, we would send { error: 'error description' }
+	        res.send({ success: true });
+	    } else {
+	        // if there were an error, we would redirect to an error page
+	        res.redirect(303, '/thank-you');
+	    }
+	});
 
 	// grab data from getWeatherData and display to home page
 	app.use(function(req,res,next){
