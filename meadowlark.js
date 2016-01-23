@@ -2,6 +2,7 @@
 
 	var app = express();
 
+	app.use(express.static(__dirname + '/public'));
 	// set up handlebars view engine
 	var handlebars = require('express-handlebars').create({defaultLayout:'main'});
 	app.engine('handlebars',handlebars.engine);
